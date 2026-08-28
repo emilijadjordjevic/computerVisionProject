@@ -1,4 +1,4 @@
-name: Deploy Markdown to GitHub Pages
+name: Deploy Notebook to GitHub Pages
 
 on:
   push:
@@ -12,6 +12,7 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -19,20 +20,17 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Convert Markdown to HTML
+      - name: Convert notebook to HTML
         run: |
-          sudo apt-get update
-          sudo apt-get install -y pandoc
-          mkdir -p /tmp/site
-          cp -r . /tmp/site/
-          rm -rf /tmp/site/.git /tmp/site/.github
-          pandoc index.md -s -o /tmp/site/index.html
+          pip install nbconvert
+          mkdir site
+          python -m jupyter nbconvert *.ipynb --to html --output index.html --output-dir site
 
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v4
         with:
-          path: /tmp/site
+          path: site
 
       - name: Deploy
         id: deployment
